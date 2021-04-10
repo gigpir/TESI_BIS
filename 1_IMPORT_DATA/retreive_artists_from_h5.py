@@ -1,3 +1,7 @@
+import sys
+# insert at 1, 0 is the script path (or '' in REPL)
+sys.path.insert(1, '/home/gigi/PycharmProjects/TESI_BIS/')
+
 from primary.data_io import retrieve_artist_dict, save_data
 
 import argparse
