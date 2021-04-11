@@ -498,6 +498,19 @@ def remove_outliers_lof(data, y):
     return X,y
 
 
+def mad_based_outlier(points, thresh=3.5):
+    if len(points.shape) == 1:
+        points = points[:,None]
+    median = np.median(points, axis=0)
+    diff = np.sum((points - median)**2, axis=-1)
+    diff = np.sqrt(diff)
+    med_abs_deviation = np.median(diff)
+    if med_abs_deviation != 0:
+        modified_z_score = 0.6745 * diff / med_abs_deviation
+    else:
+        modified_z_score = 0.6745 * diff
+        return modified_z_score < 0
+    return modified_z_score > thresh
 
 def remove_outliers_global(data, y):
     # Unsupervised Outlier Detection using
@@ -515,17 +528,19 @@ def remove_outliers_global(data, y):
         #clf = OneClassSVM(gamma='auto').fit(array)
         #pr = clf.predict(array)
 
-        mi, std = np.mean(array), np.std(array)
+        #mi, std = np.mean(array), np.std(array)
+        pr = mad_based_outlier(array)
+        '''
         pr = []
         for val in array:
             if val < (mi-3*std) or val > (mi+3*std):
                 pr.append(-1)
             else:
                 pr.append(+1)
-
+        '''
         for i, p in enumerate(pr):
             # if p == -1 we have an outlier
-            if p == -1 and y[i][1] not in black_list:
+            if p and y[i][1] not in black_list:
                 black_list[y[i][1]] = True
 
     X = []
