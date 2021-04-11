@@ -17,7 +17,7 @@ def main(args):
     print('PREPROCESSING')
     X , y = prepare_dataset(artists=artists, remove_outliers=True, mode=3, local_outlier=False,print_stats=args.stats)
 
-    '''
+
     X = tsne(X)
 
     artists = optimize_artists_dictionary(artists)
@@ -39,8 +39,8 @@ def main(args):
 
     artists = clean_similar_artists(artists=artists)
 
-    save_data(artists, filename='subset_artists_tsne.pkl')
-    '''
+    save_data(artists, filename=output_filename)
+
 
 
     return
