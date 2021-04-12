@@ -498,7 +498,7 @@ def remove_outliers_lof(data, y):
     return X,y
 
 
-def mad_based_outlier(points, thresh=3.5):
+def mad_based_outlier(points, thresh=6):
     if len(points.shape) == 1:
         points = points[:,None]
     median = np.median(points, axis=0)
