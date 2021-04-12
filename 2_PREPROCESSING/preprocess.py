@@ -1,3 +1,7 @@
+import sys
+# insert at 1, 0 is the script path (or '' in REPL)
+sys.path.insert(1, '/home/crottondi/PIRISI_TESI/TESI_BIS/')
+
 from primary.data_io import retrieve_artist_dict, save_data, load_data
 from primary.tsne import prepare_dataset, tsne, attach_tsne_to_art_dict, get_features_dict
 from primary.utility import optimize_artists_dictionary, clean_similar_artists
