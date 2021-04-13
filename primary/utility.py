@@ -151,7 +151,7 @@ def divide_dict_in_N_parts(artists, n=10, save_to_pkl=True):
     if save_to_pkl:
         for i, chunk in enumerate(chunks):
             filename = './chunks/chunk_'+i+'.pkl'
-            data_io.save_data(chunk, filename=filename)
+            primary.data_io.save_data(chunk, filename=filename)
 
     return chunks
 

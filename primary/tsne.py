@@ -528,19 +528,19 @@ def remove_outliers_global(data, y):
         #clf = OneClassSVM(gamma='auto').fit(array)
         #pr = clf.predict(array)
 
-        #mi, std = np.mean(array), np.std(array)
-        pr = mad_based_outlier(array)
-        '''
+        mi, std = np.mean(array), np.std(array)
+        #pr = mad_based_outlier(array)
+
         pr = []
         for val in array:
             if val < (mi-3*std) or val > (mi+3*std):
                 pr.append(-1)
             else:
                 pr.append(+1)
-        '''
+
         for i, p in enumerate(pr):
             # if p == -1 we have an outlier
-            if p and y[i][1] not in black_list:
+            if p==-1 and y[i][1] not in black_list:
                 black_list[y[i][1]] = True
 
     X = []
