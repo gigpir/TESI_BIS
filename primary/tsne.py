@@ -300,7 +300,7 @@ def get_features_dict():
               }
     return output
 
-def prepare_dataset(artists,remove_outliers=False, mode=0, local_outlier=True,print_stats=None):
+def prepare_dataset(artists,remove_outliers=False, mode=0, local_outlier=True, print_stats=None, print_outlier_percentage_p_feature=False, outlier_trheshold=3.5):
 
     """
             Extract information from data and build a dataset of the type X, y
@@ -393,7 +393,7 @@ def prepare_dataset(artists,remove_outliers=False, mode=0, local_outlier=True,pr
         else:
             if print_stats != None:
                 print_feature_stats(np.array(X).astype(np.float), note='before_global_outlier_remotion')
-            X, y = remove_outliers_global(np.array(X).astype(np.float), y)
+            X, y = remove_outliers_global(np.array(X).astype(np.float), y, print_outlier_percentage_p_feature=print_outlier_percentage_p_feature, outlier_trheshold=outlier_trheshold)
             if print_stats != None:
                 print_feature_stats(np.array(X).astype(np.float), note='after_global_outlier_remotion')
             X = robust_scaler(X)
@@ -512,9 +512,9 @@ def mad_based_outlier(points, thresh=8):
         return modified_z_score < 0
     return modified_z_score > thresh
 
-def remove_outliers_global(data, y):
+def remove_outliers_global(data, y, print_outlier_percentage_p_feature, outlier_trheshold=3.5):
     # Unsupervised Outlier Detection using
-
+    print("Outlier remotion started with threshold ", outlier_trheshold)
     # get unique artist ids
     artist_ids = set(np.array(y)[:, 0])
 
@@ -523,24 +523,32 @@ def remove_outliers_global(data, y):
 
     black_list = dict()
 
+    if print_outlier_percentage_p_feature:
+        table = []
+        feat_names = get_features_dict()
+
     for i in range(data.shape[1]):
         array = data[:, i]
         #clf = OneClassSVM(gamma='auto').fit(array)
         #pr = clf.predict(array)
 
-        mi, std = np.mean(array), np.std(array)
-        #pr = mad_based_outlier(array)
+        #mi, std = np.mean(array), np.std(array)
+        pr = mad_based_outlier(array,thresh=outlier_trheshold)
 
+        if print_outlier_percentage_p_feature:
+            trues = np.sum(pr)
+            table.append([feat_names[i], (trues/len(pr))])
+        '''
         pr = []
         for val in array:
             if val < (mi-3*std) or val > (mi+3*std):
                 pr.append(-1)
             else:
                 pr.append(+1)
-
+        '''
         for i, p in enumerate(pr):
             # if p == -1 we have an outlier
-            if p==-1 and y[i][1] not in black_list:
+            if p and y[i][1] not in black_list:
                 black_list[y[i][1]] = True
 
     X = []
@@ -555,7 +563,10 @@ def remove_outliers_global(data, y):
     # print("Outlier remotion: (%d - %d)= %d " % (X_y.shape[0], X_y.shape[0]-X.shape[0], X.shape[0]))
     print("Before Outlier remotion: ", X_y.shape)
     print("After Outlier remotion: ", X.shape)
-
+    if print_outlier_percentage_p_feature:
+        df = pd.DataFrame(table, columns=['feature', 'outlier_ratio'])
+        filename = 'outlier_t'+str(outlier_trheshold)+'_percentage_p_feature.csv'
+        df.to_csv(filename,index=True)
     return X, y
 
 def remove_outliers_lof_general(data, y):

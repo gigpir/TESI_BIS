@@ -19,9 +19,9 @@ def main(args):
 
     artists = load_data(filename=input_folder)
     print('PREPROCESSING')
-    X , y = prepare_dataset(artists=artists, remove_outliers=True, mode=3, local_outlier=False,print_stats=args.stats)
+    X , y = prepare_dataset(artists=artists, remove_outliers=True, mode=3, local_outlier=False,print_stats=args.stats, print_outlier_percentage_p_feature=True, outlier_trheshold=args.outlier_trheshold)
 
-
+    '''
     X = tsne(X)
 
     artists = optimize_artists_dictionary(artists)
@@ -44,7 +44,7 @@ def main(args):
     artists = clean_similar_artists(artists=artists)
 
     save_data(artists, filename=output_filename)
-
+    '''
 
 
     return
@@ -59,6 +59,8 @@ if __name__ == '__main__':
     parser.add_argument('--heatmaps', '-H', default=None, type=str, help='save heatmaps of each artist in the desired folder')
     parser.add_argument("-v", "--verbosity", default=0 ,action="count", help="increase output verbosity")
     parser.add_argument('--stats', '-s', dest='stats', action='store_true')
+    parser.add_argument('--outlier_trheshold', '-t', required=True, default=3.5, type=float, help='outlier trheshold')
+
     args = parser.parse_args()
 
     main(args)
