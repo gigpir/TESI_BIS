@@ -300,7 +300,7 @@ def get_features_dict():
               }
     return output
 
-def prepare_dataset(artists,remove_outliers=False, mode=0, local_outlier=True, print_stats=None, print_outlier_percentage_p_feature=False, outlier_trheshold=3.5):
+def prepare_dataset(artists,remove_outliers=False, mode=0, local_outlier=True, print_stats=None, print_outlier_percentage_p_feature=False, outlier_trheshold=3.5, drop_feature=None):
 
     """
             Extract information from data and build a dataset of the type X, y
@@ -385,6 +385,16 @@ def prepare_dataset(artists,remove_outliers=False, mode=0, local_outlier=True, p
         pbar.update()
     pbar.close()
     #X = feature_selection(np.array(X).astype(np.float),np.array(y)[:,0])
+
+    if drop_feature is not None:
+        X=np.array(X)
+        feat_vector = X[:, drop_feature]
+        tmp_lab=(np.array(y))[:,:2]
+        table = np.column_stack((tmp_lab, feat_vector))
+        df = pd.DataFrame(data=table, columns=['Art_id', 'Song_id', str(drop_feature)])
+        filename = 'feature_'+str(drop_feature)+'_values.csv'
+        df.to_csv(filename, index=True)
+        #X = np.delete(X, drop_feature, 1)
     if remove_outliers:
         #X, y = remove_outliers_lof_general(X, y)
         if local_outlier:

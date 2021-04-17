@@ -19,7 +19,7 @@ def main(args):
 
     artists = load_data(filename=input_folder)
     print('PREPROCESSING')
-    X , y = prepare_dataset(artists=artists, remove_outliers=True, mode=3, local_outlier=False,print_stats=args.stats, print_outlier_percentage_p_feature=True, outlier_trheshold=args.outlier_trheshold)
+    X , y = prepare_dataset(artists=artists, remove_outliers=True, mode=3, local_outlier=False,print_stats=args.stats, print_outlier_percentage_p_feature=True, outlier_trheshold=args.outlier_trheshold, drop_feature=26)
 
     '''
     X = tsne(X)
