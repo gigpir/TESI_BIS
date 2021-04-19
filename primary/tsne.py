@@ -522,6 +522,16 @@ def mad_based_outlier(points, thresh=8):
         return modified_z_score < 0
     return modified_z_score > thresh
 
+def mean_std_based_outlier(array, thresh=3):
+    mi, std = np.mean(array), np.std(array)
+    pr = []
+    for val in array:
+        if val < (mi-thresh*std) or val > (mi+thresh*std):
+            pr.append(True)
+        else:
+            pr.append(False)
+    return np.array(pr)
+
 def remove_outliers_global(data, y, print_outlier_percentage_p_feature, outlier_trheshold=3.5):
     # Unsupervised Outlier Detection using
     print("Outlier remotion started with threshold ", outlier_trheshold)
@@ -539,23 +549,14 @@ def remove_outliers_global(data, y, print_outlier_percentage_p_feature, outlier_
 
     for i in range(data.shape[1]):
         array = data[:, i]
-        #clf = OneClassSVM(gamma='auto').fit(array)
-        #pr = clf.predict(array)
 
-        #mi, std = np.mean(array), np.std(array)
-        pr = mad_based_outlier(array,thresh=outlier_trheshold)
+        #pr = mad_based_outlier(array,thresh=outlier_trheshold)
+        pr = mean_std_based_outlier(array=array,thresh=outlier_trheshold)
 
         if print_outlier_percentage_p_feature:
             trues = np.sum(pr)
-            table.append([feat_names[i], (trues/len(pr))])
-        '''
-        pr = []
-        for val in array:
-            if val < (mi-3*std) or val > (mi+3*std):
-                pr.append(-1)
-            else:
-                pr.append(+1)
-        '''
+            table.append([feat_names[i], (trues/len(pr)), trues])
+
         for i, p in enumerate(pr):
             # if p == -1 we have an outlier
             if p and y[i][1] not in black_list:
@@ -574,7 +575,7 @@ def remove_outliers_global(data, y, print_outlier_percentage_p_feature, outlier_
     print("Before Outlier remotion: ", X_y.shape)
     print("After Outlier remotion: ", X.shape)
     if print_outlier_percentage_p_feature:
-        df = pd.DataFrame(table, columns=['feature', 'outlier_ratio'])
+        df = pd.DataFrame(table, columns=['feature', 'outlier_ratio','n_outlier'])
         filename = 'outlier_t'+str(outlier_trheshold)+'_percentage_p_feature.csv'
         df.to_csv(filename,index=True)
     return X, y
