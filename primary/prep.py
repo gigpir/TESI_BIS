@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from primary.tsne import print_feature_stats, remove_outliers_global, remove_outliers_lof
+from primary.tsne import print_feature_stats, remove_outliers_global, remove_outliers_lof, get_features_dict
 from primary.utility import resize_matrix, robust_scaler
 
 
@@ -106,6 +106,18 @@ def normalize(X):
     X = robust_scaler(X)
     return X
 
+def save_dataset_csv(X, y, output_path):
+
+    X_file = output_path + '_X.csv'
+    y_file = output_path + '_y.csv'
+    np.savetxt(X_file, np.array(X), delimiter=",")
+    # convert array into dataframe
+    DF = pd.DataFrame(y)
+    #TODO
+    # fix this function
+
+    # save the dataframe as a csv file
+    DF.to_csv(y,index=False)
 
 
 

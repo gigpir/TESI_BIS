@@ -550,8 +550,8 @@ def remove_outliers_global(data, y, print_outlier_percentage_p_feature, outlier_
     for i in range(data.shape[1]):
         array = data[:, i]
 
-        #pr = mad_based_outlier(array,thresh=outlier_trheshold)
-        pr = mean_std_based_outlier(array=array,thresh=outlier_trheshold)
+        pr = mad_based_outlier(array,thresh=outlier_trheshold)
+        #pr = mean_std_based_outlier(array=array,thresh=outlier_trheshold)
 
         if print_outlier_percentage_p_feature:
             trues = np.sum(pr)
