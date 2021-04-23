@@ -532,7 +532,7 @@ def mean_std_based_outlier(array, thresh=3):
             pr.append(False)
     return np.array(pr)
 
-def remove_outliers_global(data, y, print_outlier_percentage_p_feature, outlier_trheshold=3.5):
+def remove_outliers_global(data, y, print_outlier_percentage_p_feature, outlier_trheshold=3.5, save_histogram=False):
     # Unsupervised Outlier Detection using
     print("Outlier remotion started with threshold ", outlier_trheshold)
     # get unique artist ids
@@ -550,18 +550,28 @@ def remove_outliers_global(data, y, print_outlier_percentage_p_feature, outlier_
     for i in range(data.shape[1]):
         array = data[:, i]
 
-        pr = mad_based_outlier(array,thresh=outlier_trheshold)
-        #pr = mean_std_based_outlier(array=array,thresh=outlier_trheshold)
+        #pr = mad_based_outlier(array,thresh=outlier_trheshold)
+        pr = mean_std_based_outlier(array=array,thresh=outlier_trheshold)
 
         if print_outlier_percentage_p_feature:
             trues = np.sum(pr)
             table.append([feat_names[i], (trues/len(pr)), trues])
 
         for i, p in enumerate(pr):
-            # if p == -1 we have an outlier
-            if p and y[i][1] not in black_list:
-                black_list[y[i][1]] = True
 
+            if p and y[i][1] not in black_list:
+                black_list[y[i][1]] = 1
+            elif p and y[i][1] in black_list:
+                black_list[y[i][1]] += 1
+
+    if save_histogram:
+        #istogramma distribuzione numero di feature sballate per brano
+        ax = plt.hist(list(black_list.values()), bins=data.shape[1])
+        filename = 'outliers_vs_outlier_features.png'
+        title = 'Number of outliers vs Number of outlier features'
+        plt.title(title)
+        plt.savefig(filename)
+        plt.close('all')
     X = []
     y = []
     for r in X_y:

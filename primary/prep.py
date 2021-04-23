@@ -90,13 +90,14 @@ def gen_dataset(artists,mode=3):
 
     return X,y
 
-def remove_outlier(X,y,thresh,verbose=False):
+def remove_outlier(X,y,thresh,verbose=False,save_histogram=False):
     if verbose:
         print_feature_stats(np.array(X).astype(np.float), note='before_global_outlier_remotion')
 
     X, y = remove_outliers_global(np.array(X).astype(np.float), y,
                                   print_outlier_percentage_p_feature=verbose,
-                                  outlier_trheshold=thresh)
+                                  outlier_trheshold=thresh,
+                                  save_histogram=save_histogram)
     if verbose:
         print_feature_stats(np.array(X).astype(np.float), note='after_global_outlier_remotion')
     #X, y = remove_outliers_lof(X, y)
@@ -117,8 +118,8 @@ def save_dataset_csv(X, y, output_path):
     # fix this function
 
     # save the dataframe as a csv file
-    DF.to_csv(y,index=False)
-
+    #DF.to_csv(y,index=False)
+    return
 
 
 
