@@ -60,15 +60,3 @@ if __name__ == '__main__':
     main(args)
 
 
-    #TODO
-    # istogramma distribuzione numero di feature sballate per brano
-    # escludere pitch min e max
-    # -----
-    # Approccio incrementale (configurazione percentile based thr 3.5)
-    # calcorare tsne + Heatmap
-    # -> solo medie
-    # -> + var
-    # -> + derivata 1°
-    # -> + derivata 2°
-    # -----
-    # provare differenti valori di threshold (senza applicare tsne)

@@ -57,7 +57,7 @@ def increase_vector_size(vect,final_size):
     return final_vect
 
 
-def resize_matrix(matrix, row, gradient=0, min_max_var=False):
+def resize_matrix(matrix, row, gradient=0, min_max_var=False, only_var = False):
     # reduce or increase the number of rows of matrix in order
     # to achieve dimension specified by row
 
@@ -79,7 +79,13 @@ def resize_matrix(matrix, row, gradient=0, min_max_var=False):
             final = np.append(final, min)
             final = np.append(final, max)
             final = np.append(final, var)
-
+        elif only_var:
+            # extract just variance of coloumn vector
+            if i == 0:
+                final = []
+            current_v = matrix[:,i]
+            var = np.var(current_v)
+            final = np.append(final, var)
         else:
             #extract and transpose the corresponding coloumn vector
             if gradient == 0:

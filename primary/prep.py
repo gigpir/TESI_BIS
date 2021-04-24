@@ -65,8 +65,8 @@ def gen_dataset(artists,mode=3):
                 feat_row = np.append(feat_row, [s.tempo, s.loudness])
             if mode >= 1:
                 # append min, max, variance of each coloumn
-                feat_row = np.append(feat_row, resize_matrix(mfcc_mat, rows, min_max_var=True))
-                feat_row = np.append(feat_row, resize_matrix(pitch_mat, rows, min_max_var=True))
+                feat_row = np.append(feat_row, resize_matrix(mfcc_mat, rows, only_var=True))
+                feat_row = np.append(feat_row, resize_matrix(pitch_mat, rows, only_var=True))
             if mode >= 2:
                 # append first  derivative
                 feat_row = np.append(feat_row, resize_matrix(mfcc_mat, rows, gradient=1))
