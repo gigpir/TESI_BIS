@@ -1,11 +1,7 @@
-import tsne
-from tqdm import tqdm
-from data_io import load_data, save_data
-import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
-import csv
-import pandas as pd
+import numpy as np
+from tqdm import tqdm
+
 
 def heatmap(data, row_labels, col_labels, ax=None,
             cbar_kw={}, cbarlabel="", **kwargs):
