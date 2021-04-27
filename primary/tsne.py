@@ -19,7 +19,7 @@ from sklearn.feature_selection import RFECV
 from sklearn.neighbors import LocalOutlierFactor
 
 def tsne(X, n_comp = 2,lr=400,perp=30):
-    X_embedded = TSNE(n_components=n_comp,learning_rate=lr,n_jobs=-1,random_state=49,perplexity=perp).fit_transform(X)# init = 'pca',
+    X_embedded = TSNE(n_components=n_comp,learning_rate=lr,n_jobs=-1,random_state=49,perplexity=perp, verbose=4).fit_transform(X)# init = 'pca',
     #manifold.TSNE(n_components=n_components, init='pca',random_state=0)
     return X_embedded
 

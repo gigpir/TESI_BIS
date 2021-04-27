@@ -20,49 +20,56 @@ d = {0:'mean',
      }
 
 def main(args):
+
     input_folder = args.i_path
     threshold = args.threshold
     mode = args.mode
-
+    intervals = args.resolution
     print('LOADING PKL...')
     artists = load_data(filename=input_folder)
-
-
 
     print('PREPROCESSING ', d[mode])
 
     X, y = gen_dataset(artists=artists, mode=mode)
     X, y = remove_outlier(X=X, y=y, thresh=threshold)
     X = normalize(X=X)
-    print('TSNE')
 
-    X = tsne(X)
+    for lr in [10,100,500,1000]:
+        print('TSNE with learning rate =', lr)
+        X_emb = tsne(X,lr=lr)
 
-    artists = optimize_artists_dictionary(artists)
-    artists = attach_tsne_to_art_dict(artists=artists, X=X, y=y)
+        print('[TSNE-1 - TSNE-2]')
+        print('min values')
+        print(np.amin(X_emb, axis=0))
+        print('max values')
+        print(np.amax(X_emb, axis=0))
+        print('mean values')
+        print(np.mean(X_emb, axis=0))
+        print('variance values')
+        print(np.var(X_emb, axis=0))
+
+
+    #artists = optimize_artists_dictionary(artists)
+    #artists = attach_tsne_to_art_dict(artists=artists, X=X, y=y)
 
     tsne_min = np.amin(X, axis=0)
     tsne_max = np.amax(X, axis=0)
 
 
-    print('[TSNE-1 - TSNE-2]')
-    print('min values')
-    print(np.amin(X, axis=0))
-    print('max values')
-    print(np.amax(X, axis=0))
-    print('mean values')
-    print(np.mean(X, axis=0))
-    print('variance values')
-    print(np.var(X, axis=0))
 
 
-    artists = clean_similar_artists(artists=artists)
+
+    #artists = clean_similar_artists(artists=artists)
 
     #save_data(artists, filename=output_filename)
 
 
 
 if __name__ == '__main__':
+    '''
+        search for an optimal learning rate 
+    '''
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--i_path', '-i', required=True, type=str, help='path to pkl artists dictionary')
@@ -73,19 +80,13 @@ if __name__ == '__main__':
                                                                       '1: 0 + variance\n'
                                                                       '2: 1 + first derivative \n'
                                                                       '3: second derivative')
+    parser.add_argument('--resolution', '-r', required=True, type=int, help='the learning rate interval will be divided into n steps')
     args = parser.parse_args()
 
     main(args)
 
-    # TODO
-    # istogramma distribuzione numero di feature sballate per brano
-    # escludere pitch min e max
-    # -----
-    # Approccio incrementale (configurazione percentile based thr 3.5)
-    # calcorare tsne + Heatmap
-    # -> solo medie
-    # -> + var
-    # -> + derivata 1°
-    # -> + derivata 2°
-    # -----
-    # provare differenti valori di threshold (senza applicare tsne)
+
+# TODO
+# provare lr 10,100,1000 sul subset 1%
+# plot andamento del gradiente e dell'errore
+#
