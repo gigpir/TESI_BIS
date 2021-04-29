@@ -36,7 +36,7 @@ def main(args):
     X = normalize(X=X)
     print('TSNE')
 
-    X = tsne(X)
+    X = tsne(X=X,lr=1000)
 
     artists = optimize_artists_dictionary(artists)
     artists = attach_tsne_to_art_dict(artists=artists, X=X, y=y)
