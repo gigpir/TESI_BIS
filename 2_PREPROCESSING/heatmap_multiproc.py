@@ -40,21 +40,30 @@ def gen_heatmaps_slave(dimension, min, max, list_ids):
     # max = np.array([ 70, 70])
 
     for id_ in list_ids:
-        result[id_] = np.zeros((dimension, dimension))
-        n_outliers = 0
-        for s in artists[id_].song_list.values():
+
+        if len(artists[id_].song_list.values()) != 0:
+            #the artist has actually songs associated
+            result[id_] = np.zeros((dimension, dimension))
+            n_outliers = 0
+            for s in artists[id_].song_list.values():
+                try:
+                    row_idx = int(((s.tsne[0] + abs(min[0])) / (max[0] + abs(min[0]))) * dimension)
+                    col_idx = int(((s.tsne[1] + abs(min[1])) / (max[1] + abs(min[1]))) * dimension)
+                    result[id_][row_idx, col_idx] += 1
+                except:
+                    n_outliers += 1
+            # normalize by number of artists song
             try:
-                row_idx = int(((s.tsne[0] + abs(min[0])) / (max[0] + abs(min[0]))) * dimension)
-                col_idx = int(((s.tsne[1] + abs(min[1])) / (max[1] + abs(min[1]))) * dimension)
-                result[id_][row_idx, col_idx] += 1
+                if len(artists[id_].song_list) - n_outliers != 0:
+                    result[id_] /= len(artists[id_].song_list) - n_outliers
+                else:
+                    #empty heatmap
+                    result[id_] = None
             except:
-                n_outliers += 1
-        # normalize by number of artists song
-        try:
-            result[id_] /= len(artists[id_].song_list) - n_outliers
-        except:
-            print(id_, ' has ', len(artists[id_].song_list), ' song with ', n_outliers,
-                  ' outliers with respect to range selected')
+                print(id_, ' has ', len(artists[id_].song_list), ' song with ', n_outliers,
+                      ' outliers with respect to range selected')
+        else:
+            result[id_] = None
     return result
 
 def merge_heatmaps(artists, result):
@@ -103,17 +112,18 @@ def plot_heatmaps_slave(dimension,min, max, list_ids):
 
     for id_ in list_ids:
         a = artists[id_]
-        fig, ax = plt.subplots()
+        if a.tsne_heatmap is not None:
+            fig, ax = plt.subplots()
 
-        im, cbar = heatmap(a.tsne_heatmap, range_r, range_c, ax=ax,
-                           cmap="viridis", cbarlabel="songs concentration")
+            im, cbar = heatmap(a.tsne_heatmap, range_r, range_c, ax=ax,
+                               cmap="viridis", cbarlabel="songs concentration")
 
-        title = "TSNE Heatmap for "+ a.name
-        filename = output_path + a.id
-        ax.set_title(title)
-        fig.tight_layout()
-        plt.savefig(filename, dpi=300)
-        plt.close('all')
+            title = "TSNE Heatmap for "+ a.name
+            filename = output_path + a.id
+            ax.set_title(title)
+            fig.tight_layout()
+            plt.savefig(filename, dpi=300)
+            plt.close('all')
 
 def plot_heatmaps_master(artists, dimension ,min, max):
     start = time.time()
@@ -136,6 +146,7 @@ def plot_heatmaps_master(artists, dimension ,min, max):
 def main(args):
     input_folder = args.i_path
     threshold = args.threshold
+    output_pkl = args.output_pkl
     global output_path
     output_path = args.o_path
     if output_path[-1] != '/':
@@ -153,7 +164,7 @@ def main(args):
     X, y = remove_outlier(X=X, y=y, thresh=threshold)
     X = normalize(X=X)
     print('TSNE')
-    X = tsne(X)
+    X = tsne(X=X, lr=1000)
 
     artists = optimize_artists_dictionary(artists)
     artists = attach_tsne_to_art_dict(artists=artists, X=X, y=y)
@@ -179,9 +190,7 @@ def main(args):
     plot_heatmaps_master(artists=artists, dimension=dimension, min=min, max=max)
 
 
-
-
-    #save_data(artists, filename=output_filename)
+    save_data(artists, filename=output_pkl)
 
 
 
@@ -195,7 +204,8 @@ if __name__ == '__main__':
                                                                       '\n0: mean values\n'
                                                                       '1: 0 + variance\n'
                                                                       '2: 1 + first derivative \n'
-                                                                      '3: second derivative')
+                                                                    '3: second derivative')
+    parser.add_argument('--output_pkl', '-O', required=False, type=str,default='', help='path where output data will be saved')
     args = parser.parse_args()
 
     main(args)
