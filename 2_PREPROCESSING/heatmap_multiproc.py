@@ -31,7 +31,7 @@ min = None
 max = None
 def gen_heatmaps_slave(dimension, min, max, list_ids):
     result = dict()
-
+    global artists
     # min = np.array([-0.00012, -0.00012])
     # max = np.array([ 0.0000785, 0.00013])
 
