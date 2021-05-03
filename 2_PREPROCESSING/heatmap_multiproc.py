@@ -118,10 +118,17 @@ def plot_heatmaps_slave(dimension,min, max, list_ids):
             im, cbar = heatmap(a.tsne_heatmap, range_r, range_c, ax=ax,
                                cmap="viridis", cbarlabel="songs concentration")
 
-            title = "TSNE Heatmap for "+ a.name
-            filename = output_path + a.id
-            ax.set_title(title)
-            fig.tight_layout()
+            try:
+                title = "TSNE Heatmap for " + a.name
+                filename = output_path + a.id
+                ax.set_title(title)
+                fig.tight_layout()
+            except:
+                title = "TSNE Heatmap for " + a.id
+                filename = output_path + a.id
+                ax.set_title(title)
+                fig.tight_layout()
+
             plt.savefig(filename, dpi=300)
             plt.close('all')
 
@@ -186,11 +193,14 @@ def main(args):
     artists = clean_similar_artists(artists=artists)
     print('GENERATE HEATMAPS')
     gen_heatmaps_master(dimension=dimension, min=min, max=max)
+    print('SAVING DATA')
+    save_data(artists, filename=output_pkl)
+
     print('PLOT HEATMAPS in ', output_path)
     plot_heatmaps_master(artists=artists, dimension=dimension, min=min, max=max)
 
 
-    save_data(artists, filename=output_pkl)
+
 
 
 

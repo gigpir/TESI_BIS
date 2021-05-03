@@ -150,13 +150,13 @@ def gen_colors(N):
         hex_out.append('#%02x%02x%02x' % tuple(rgb))
     return hex_out
 
-def divide_dict_in_N_parts(artists, n=10, save_to_pkl=True):
+def divide_dict_in_N_parts(artists, n=10, save_to_pkl=True, output_path='./'):
 
-    chunks = np.array_split(len(artists.keys()), n)
+    chunks = np.array_split(list(artists.keys()), n)
 
     if save_to_pkl:
         for i, chunk in enumerate(chunks):
-            filename = './chunks/chunk_'+i+'.pkl'
+            filename = output_path + 'chunk_'+str(i)+'.pkl'
             primary.data_io.save_data(chunk, filename=filename)
 
     return chunks

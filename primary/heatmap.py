@@ -119,3 +119,48 @@ def plot_heatmaps(artists,dimension, min, max):
         fig.tight_layout()
         plt.savefig(filename, dpi=300)
         plt.close('all')
+
+
+def compute_heatmap_distance(h1,h2,dimension,metric='minkowski_2'):
+    """
+        Parameters
+        ----------
+        h1 : 2d array
+            The name of the animal
+        h2 : 2d array
+            The sound the animal makes
+        dimension : int
+            array dimension
+        metric : str
+            [minkowski_2, soergel_7, not_intersection_11, kullback-leibler_37]
+            see http://www.fisica.edu.uy/~cris/teaching/Cha_pdf_distances_2007.pdf for info
+
+        Output
+        ---------
+        total_d : float
+            the greater total_d is the farther h1 and h2 are
+        """
+    total_d = 0
+    total_div = 0
+    for i in range(dimension):
+        for j in range(dimension):
+            if metric == 'minkowski_2':
+                d = abs(h1[i][j]-h2[i][j])
+                total_d += d
+            if metric == 'soergel_7':
+                d = abs(h1[i][j]-h2[i][j])
+                div = max(h1[i][j],h2[i][j])
+                total_d += d
+                total_div += div
+            if metric == 'not_intersection_11':
+                d = min(h1[i][j],h2[i][j])
+                total_d += d
+            if metric == 'kullback-leibler_37':
+                d = h1[i][j] * np.log(h1[i][j]/h2[i][j])
+                total_d += d
+
+    if metric == 'soergel_7':
+        total_d /= total_div
+    if metric == 'not_intersection_11':
+        total_d = 1 - total_d
+    return total_d
