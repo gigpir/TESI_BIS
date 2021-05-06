@@ -1,0 +1,38 @@
+import sys
+# insert at 1, 0 is the script path (or '' in REPL)
+
+sys.path.insert(1, '/home/crottondi/PIRISI_TESI/TESI_BIS/')
+import argparse
+from primary.data_io import save_data, load_data
+
+
+def main(args):
+    n_chunks = args.n_chunks
+    chunk_folder = args.chunk_folder
+    if chunk_folder[-1] != '/':
+        chunk_folder += '/'
+
+    #group all chunk level ranking in a single ranking file
+    ranking = dict()
+    for i in range(n_chunks):
+        chunk_filename = 'chunk_' + str(i) + '.pkl_OUT.pkl'
+        chunk_pathname = chunk_folder+chunk_filename
+        chunk_out = load_data(filename=chunk_pathname)
+
+        for k,v in chunk_out.items():
+            ranking[k]=v
+
+    final_pathname= chunk_folder+'merged_OUT.pkl'
+
+    save_data(ranking,filename=final_pathname)
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--n_chunks', '-n', required=False, type=int, default=1,
+                        help='number of chunk lists to create')
+    parser.add_argument('--chunk_folder', '-c', required=False, type=str, default=1,
+                        help='folder where _OUT chunks are')
+
+    args = parser.parse_args()
+    main(args)
