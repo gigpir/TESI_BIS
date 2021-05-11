@@ -1,0 +1,9 @@
+TODO
+ranking con valore metrica per ogni artista_simile
+a partire dalla ground truth, visualizzare la heatmap di ogni artista simile e confrontarle
+
+
+per ogni artista ricavare il numero di brani del primo artista simile nel ranking -> grafico
+valutare come metrica di distanza tra le heatmap cross correlazione tra immagini
+
+provare a non normalizzare le heatmap

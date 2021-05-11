@@ -62,6 +62,7 @@ def compute_ranking_slave(dimension, top_k, list_ids):
             try:
                 #distances = heapq.nsmallest(4, distances, key=itemgetter(1))
                 distances.sort(key=itemgetter(1), reverse=False)
+                top_k = len(artists[outer_id].similar_artists)
                 distances = distances[:top_k]
                 ranking = [row[0] for row in distances]
                 rankings[outer_id] = ranking

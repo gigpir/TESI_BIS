@@ -1,0 +1,134 @@
+
+tutti gli script vengono lanciati attraverso un container singularity che contiene tutte le librerie necessarie al loro funzionamento
+
+
+1_IMPORT.sbatch 
+	singularity exec /home/crottondi/PIRISI_TESI/singularity/singularityEnv.img \
+	python3 /home/crottondi/PIRISI_TESI/TESI_BIS/1_IMPORT_DATA/retreive_artists_from_h5.py \
+	--i_path /home/crottondi/PIRISI_TESI/MSD_FULL/data \
+	--o_path /home/crottondi/PIRISI_TESI/PKL \
+	--o_name artists.pkl
+
+	FUNZIONAMENTO: estrarre le informazione dai file hdf5, tralasciando il non necessario e salva il dataset sotto forma di dizionario e lo serializza in un file .pkl 
+
+2_PREPROCESSING_heatmap.sbatch
+	singularity exec /home/crottondi/PIRISI_TESI/singularity/singularityEnv.img \
+	python3 /home/crottondi/PIRISI_TESI/TESI_BIS/2_PREPROCESSING/heatmap_multiproc.py \
+	--i /home/crottondi/PIRISI_TESI/PKL/artists.pkl \
+	--o_path /home/crottondi/PIRISI_TESI/preproc_percentile_+3_5/HM_3 \
+	-t 3.5 \
+	--output_pkl /home/crottondi/PIRISI_TESI/PKL/artists_hm.pkl \
+	-m 3
+
+	FUNZIONAMENTO:  svolge il preprocessing del dataset fornito come parametro
+							calcola tsne e allega le coordinate tsne ad ogni brano, 
+							calcola le heatmap e le allega ad ogni artista, 
+							salva il contenuto in un dizionario serializzato --output_pkl. 
+							Inoltre salva i plot delle heatmap in una cartella indicata come parametro (al momento non salva tutte le heatmap a causa di un problema di memoria)
+							il programma termina con un errore perchè la ram viene saturata durante il salvataggio delle heatmap.  
+							Tuttavia il salvataggio del file pkl avviene prima quindi non è un problema per gli stadi successivi della pipeline
+							
+
+3_RANKING_create_chunks.sbatch							
+	singularity exec /home/crottondi/PIRISI_TESI/singularity/singularityEnv.img \
+	python3 /home/crottondi/PIRISI_TESI/TESI_BIS/3_RANKING/1_generate_N_chunks.py \
+	--i_path /home/crottondi/PIRISI_TESI/PKL/artists_hm.pkl \
+	--o_path /home/crottondi/PIRISI_TESI/preproc_percentile_+3_5/CHUNKS \
+	-n 20
+	
+	FUNZIONAMENTO: la lista di tutti gli artisti viene splittata in -n chunk che costituiranno l'input per ogni nodo al momento del calcolo dei ranking
+	
+3_RANKING_compute_dist.sh
+	
+	FUNZIONAMENTO: è uno script che lancia gli script sbatch del tipo 3_RANKING_compute_ranking_chunk_i.sbatch contenuti nella cartella  /home/crottondi/PIRISI_TESI/TESI_BIS/3_RANKING_2/
+		
+		singularity exec /home/crottondi/PIRISI_TESI/singularity/singularityEnv.img \
+		python3 /home/crottondi/PIRISI_TESI/TESI_BIS/3_RANKING/2_compute_ranking_chunk_multiproc.py \
+		--i_path /home/crottondi/PIRISI_TESI/PKL/artists_hm.pkl \
+		--output_path /home/crottondi/PIRISI_TESI/preproc_percentile_+3_5/CHUNKS/OUT \
+		--i_chunk /home/crottondi/PIRISI_TESI/preproc_percentile_+3_5/CHUNKS/chunk_0.pkl
+		
+		FUNZIONAMENTO: il nodo riceve la lista di id sui quali deve lavorare attraverso -i_chunk e produce un file che colloca in --output_path contenente un dizionario del tipo <ID_ARTISTA, [ID_ARTISTA_SIMILE_1, ID_ARTISTA_SIMILE_2, ID_ARTISTA_SIMILE_N]>
+
+3_RANKING_merge_chunks.sbatch
+
+	singularity exec /home/crottondi/PIRISI_TESI/singularity/singularityEnv.img \
+	python3 /home/crottondi/PIRISI_TESI/TESI_BIS/3_RANKING/3_merge_N_chunks.py \
+	--n_chunks 20 \
+	--chunk_folder /home/crottondi/PIRISI_TESI/preproc_percentile_+3_5/CHUNKS/OUT
+	
+	FUNZIONAMENTO: tutti gli -n chunk presenti in -chunk_folder vengono riuniti in un unico file con lo stesso formato
+	
+3_RANKING_evaluate.sbatch
+	
+	---in fase di sviluppo---
+	
+	singularity exec /home/crottondi/PIRISI_TESI/singularity/singularityEnv.img \
+	python3 /home/crottondi/PIRISI_TESI/TESI_BIS/3_RANKING/4_evaluate.py \
+	--i_path /home/crottondi/PIRISI_TESI/PKL/artists_hm.pkl \
+	--i_ranking /home/crottondi/PIRISI_TESI/preproc_percentile_+3_5/CHUNKS/OUT/merged_OUT.pkl \
+	--output_path /home/crottondi/PIRISI_TESI/preproc_percentile_+3_5
+	
+	FUNZIONAMENTO:  confronta la lista degli artisti simili con quella calcolata precedentemente
+
+
+
+#############################################################################################################
+
+Riporto il contenuto del file /home/crottondi/PIRISI_TESI/TESI_BIS/primary/data_class.py che è utile per capire i nomi dei campi che contengono le informazioni
+
+class Song:
+    def __init__(self, id, name, hotttnesss):
+        self.name = name
+        self.id = id
+        self.hotttnesss = hotttnesss
+        self.id_artist=''
+        self.bars_start = None
+        self.bars_confidence = None
+        self.beats_start = None
+        self.beats_confidence = None
+        self.danceability = None
+        self.duration = None
+        self.end_of_fade_in = None
+        self.energy = None
+        self.key = None
+        self.loudness = None
+        self.mode = None
+        self.mode_confidence = None
+        self.start_of_fade_out = None
+        self.tempo = None
+        self.time_signature = None
+        self.time_signature_confidence = None
+        self.track_id = None
+        self.segments_start = None
+        self.segments_confidence = None
+        self.segments_pitches = None
+        self.segments_timbre = None
+        self.segments_loudness_max = None
+        self.segments_loudness_max_time = None
+        self.segments_loudness_start = None
+        self.sections_start = None
+        self.sections_confidence = None
+        self.tatums_start = None
+        self.tatums_confidence = None
+        self.tsne = None
+    def __str__(self):
+        return str(self.name)
+class Artist:
+    def __init__(self, name, id):
+        self.name = name
+        self.id = id
+        self.terms = []
+        self.terms_freq = []
+        self.terms_weight = []
+        self.similar_artists = [] #Ground truth?
+        self.song_list = []
+        self.has_N_similar_artists = True
+        self.tsne_heatmap = None
+        self.my_similar_artists = None
+    def has_zero_terms(self):
+        return len(self.terms) == 0
+    def get_terms_num(self):
+        return len(self.terms)	
+	
+	

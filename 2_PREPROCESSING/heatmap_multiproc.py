@@ -155,7 +155,6 @@ def main(args):
     input_folder = args.i_path
     threshold = args.threshold
     output_pkl = args.output_pkl
-    just_plot= args.just_plot
     global output_path
     output_path = args.o_path
     if output_path[-1] != '/':
@@ -164,38 +163,33 @@ def main(args):
     global artists
     print('LOADING PKL...')
     artists = load_data(filename=input_folder)
-    if not just_plot:
 
-        print('PREPROCESSING ', d[mode])
 
-        X, y = gen_dataset(artists=artists, mode=mode)
-        X, y = remove_outlier(X=X, y=y, thresh=threshold)
-        X = normalize(X=X)
-        print('TSNE')
-        X = tsne(X=X, lr=1000)
-
-        artists = optimize_artists_dictionary(artists)
-        artists = attach_tsne_to_art_dict(artists=artists, X=X, y=y)
-
-        min = np.amin(X, axis=0)
-        max = np.amax(X, axis=0)
-        dimension = 20
-
-        print('[TSNE-1 - TSNE-2]')
-        print('min values')
-        print(np.amin(X, axis=0))
-        print('max values')
-        print(np.amax(X, axis=0))
-        print('mean values')
-        print(np.mean(X, axis=0))
-        print('variance values')
-        print(np.var(X, axis=0))
-
-        artists = clean_similar_artists(artists=artists)
-        print('GENERATE HEATMAPS')
-        gen_heatmaps_master(dimension=dimension, min=min, max=max)
-        print('SAVING DATA')
-        save_data(artists, filename=output_pkl)
+    print('PREPROCESSING ', d[mode])
+    X, y = gen_dataset(artists=artists, mode=mode)
+    X, y = remove_outlier(X=X, y=y, thresh=threshold)
+    X = normalize(X=X)
+    print('TSNE')
+    X = tsne(X=X, lr=1000)
+    artists = optimize_artists_dictionary(artists)
+    artists = attach_tsne_to_art_dict(artists=artists, X=X, y=y)
+    min = np.amin(X, axis=0)
+    max = np.amax(X, axis=0)
+    dimension = 20
+    print('[TSNE-1 - TSNE-2]')
+    print('min values')
+    print(np.amin(X, axis=0))
+    print('max values')
+    print(np.amax(X, axis=0))
+    print('mean values')
+    print(np.mean(X, axis=0))
+    print('variance values')
+    print(np.var(X, axis=0))
+    artists = clean_similar_artists(artists=artists)
+    print('GENERATE HEATMAPS')
+    gen_heatmaps_master(dimension=dimension, min=min, max=max)
+    print('SAVING DATA')
+    save_data(artists, filename=output_pkl)
 
 
     print('PLOT HEATMAPS in ', output_path)
@@ -218,8 +212,6 @@ if __name__ == '__main__':
                                                                       '2: 1 + first derivative \n'
                                                                     '3: second derivative')
     parser.add_argument('--output_pkl', '-O', required=False, type=str,default='', help='path where output data will be saved')
-    parser.add_argument('--just_plot' ,'-p', required=False, default=False, action='store_true')
-
     args = parser.parse_args()
 
     main(args)
