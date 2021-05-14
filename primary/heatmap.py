@@ -121,7 +121,7 @@ def plot_heatmaps(artists,dimension, min, max):
         plt.close('all')
 
 
-def compute_heatmap_distance(h1,h2,dimension,metric='minkowski_2'):
+def compute_heatmap_distance(h1,h2,dimension=20,metric='minkowski_2'):
     """
         Parameters
         ----------
