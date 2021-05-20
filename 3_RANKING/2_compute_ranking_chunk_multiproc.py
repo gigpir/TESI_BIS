@@ -9,7 +9,7 @@ sys.path.insert(1, '/home/crottondi/PIRISI_TESI/TESI_BIS/')
 import numpy as np
 import argparse
 from primary.data_io import save_data, load_data
-from primary.heatmap import compute_heatmap_distance
+from primary.heatmap import compute_heatmap_distance, compute_cross_correlation_distance
 from operator import itemgetter
 
 CENTROID = False
@@ -17,6 +17,9 @@ output_path=None
 
 chunk = None
 artists = None
+
+metric = None
+peak_thresh = None
 
 def average_linkage_distance(a1,a2):
     out = 0
@@ -46,17 +49,18 @@ def average_linkage_distance(a1,a2):
 
 def compute_ranking_slave(dimension, top_k, list_ids):
     global artists
+    global peak_thresh
     rankings = dict()
     for outer_id in list_ids:
         if len(artists[outer_id].similar_artists) > 0:
             distances = []
             for inner_a in artists.values():
                 if inner_a.id != outer_id and inner_a.tsne_heatmap is not None:
-                    if CENTROID:
-                        d = average_linkage_distance(artists[outer_id], inner_a)
-                    else:
+                    if metric == 'minkowski':
                         d = compute_heatmap_distance(h1=artists[outer_id].tsne_heatmap, h2=inner_a.tsne_heatmap,
                                          dimension=dimension)
+                    elif metric == 'cc_peak':
+                        d = compute_cross_correlation_distance(h1=artists[outer_id].tsne_heatmap, h2=inner_a.tsne_heatmap,peak_thresh=peak_thresh ,dimension=dimension)
                     distances.append([inner_a.id, d])
             a=0
             try:
@@ -107,6 +111,13 @@ def main(args):
     if output_path[-1] != '/':
         output_path += '/'
 
+    global metric
+    metric = args.metric
+    global peak_thresh
+    peak_thresh = args.peak_thresh
+
+
+
     global artists
     print('LOADING PKL...', end='')
     artists = load_data(filename=artists_filename)
@@ -135,6 +146,9 @@ if __name__ == '__main__':
     parser.add_argument('--i_path', '-i', required=True, type=str, help='path to pkl artists dictionary it has to include heatmaps attached')
     parser.add_argument('--i_chunk', '-ic', required=True, type=str, help='path to pkl chunk where a list of ids is saved')
     parser.add_argument('--output_path', '-o', required=False, type=str,default='', help='path where output data will be saved')
+    parser.add_argument('--metric', '-m', required=False, type=str, default='minkowski', choices=['minkowski', 'cc_peak', 'intersection_1', 'instersection_2'], help='metric type')
+    parser.add_argument('--peak_thresh', '-t', required=False, type=float, default=1.1, help='peak threshold')
+
     args = parser.parse_args()
 
     main(args)
