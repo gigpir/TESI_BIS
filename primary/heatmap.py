@@ -166,7 +166,7 @@ def compute_heatmap_distance(h1,h2,dimension=20,metric='minkowski_2'):
         total_d = 1 - total_d
     return total_d
 
-def compute_cross_correlation_distance(h1, h2, peak_thresh, dimension, max_peaks=1):
+def compute_cross_correlation_distance(h1, h2, peak_thresh, dimension=20, max_peaks=1):
     shft_0 = np.array([19, 19])
 
     # compute cross correlation matrix

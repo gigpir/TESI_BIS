@@ -146,7 +146,7 @@ if __name__ == '__main__':
     parser.add_argument('--i_path', '-i', required=True, type=str, help='path to pkl artists dictionary it has to include heatmaps attached')
     parser.add_argument('--i_chunk', '-ic', required=True, type=str, help='path to pkl chunk where a list of ids is saved')
     parser.add_argument('--output_path', '-o', required=False, type=str,default='', help='path where output data will be saved')
-    parser.add_argument('--metric', '-m', required=False, type=str, default='minkowski', choices=['minkowski', 'cc_peak', 'intersection_1', 'instersection_2'], help='metric type')
+    parser.add_argument('--metric', '-m', required=False, type=str, default='minkowski', choices=['minkowski', 'cc_peak'], help='metric type')
     parser.add_argument('--peak_thresh', '-t', required=False, type=float, default=1.1, help='peak threshold')
 
     args = parser.parse_args()

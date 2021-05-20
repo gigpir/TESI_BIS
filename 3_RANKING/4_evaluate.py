@@ -1,13 +1,18 @@
 import sys
 # insert at 1, 0 is the script path (or '' in REPL)
-from primary.heatmap import compute_heatmap_distance
+from primary.heatmap import compute_heatmap_distance, compute_cross_correlation_distance
 import pandas as pd
 sys.path.insert(1, '/home/crottondi/PIRISI_TESI/TESI_BIS/')
 import argparse
 from primary.data_io import save_data, load_data
 import primary.rbo as rbo
 import numpy as np
-def compute_ranking_score(artists):
+
+heatmap_metric = None
+ranking_metric = None
+peak_thresh = None
+
+def compute_ranking_score(artists,ranking_metric):
     """
         Give a score to a ranking algorithm
                     Parameters
@@ -29,7 +34,7 @@ def compute_ranking_score(artists):
 
     print('The Average score (RBO) for the metric minkowsy is ', np.mean(scores))
 
-def print_rankings(artists, filename):
+def print_rankings(artists, filename,ranking_metric):
 
     f = open(filename, "w+")
 
@@ -41,18 +46,38 @@ def print_rankings(artists, filename):
         f.write(str(names))
         f.write('\n')
         try:
-            rbo_score = rbo.RankingSimilarity(a.similar_artists, a.my_similar_artists).rbo()
+            if ranking_metric=='rbo':
+                score = rbo.RankingSimilarity(a.similar_artists, a.my_similar_artists).rbo()
+            elif ranking_metric =='intersection':
+                score = ranking_intersection_similarity(ranking_gt=a.similar_artists, my_ranking = a.my_similar_artists)
+            elif ranking_metric =='minimum_cardinality':
+                score = minimum_cardinality_similarity(ranking_gt=a.similar_artists, my_ranking = a.my_similar_artists)
             names = [artists[id_].name for id_ in a.my_similar_artists]
         except:
-            rbo_score = 0
+            score = 0
             names = []
-        f.write('%s. RBO: %.2f ' % ('minkowsky', rbo_score))
+        f.write('%s. RBO: %.2f ' % ('minkowsky', score))
         f.write(str(names))
         f.write('\n')
         f.write('\n')
     f.close()
 
-def print_rankings_verbose(artists, filename, output_path):
+
+def ranking_intersection_similarity(ranking_gt, my_ranking):
+    # prendere in considerazione come metrica (alternativamente ad rbo) il
+    # rapporto tra la semplice intersezione e la cardinalità del ranking di gt
+
+    intersection = [value for value in ranking_gt if value in ranking_metric]
+    sim = len(intersection)/len(ranking_gt)
+    return sim
+
+
+def minimum_cardinality_similarity(ranking_gt, my_ranking):
+    # prendere in considerazione di calcolare la cardinalità minima
+    # della lista predetta necessaria per raggiungere un intersezione pari alla cardinalità di gt
+    return 0
+
+def print_rankings_verbose(artists, filename, output_path, heatmap_metric, ranking_metric, peak_thresh):
 
 
 
@@ -66,12 +91,18 @@ def print_rankings_verbose(artists, filename, output_path):
         f.write(str(names))
         f.write('\n')
         try:
-            rbo_score = rbo.RankingSimilarity(a.similar_artists, a.my_similar_artists).rbo()
+            if ranking_metric == 'rbo':
+                score = rbo.RankingSimilarity(a.similar_artists, a.my_similar_artists).rbo()
+            elif ranking_metric == 'intersection':
+                score = ranking_intersection_similarity(ranking_gt=a.similar_artists, my_ranking=a.my_similar_artists)
+            elif ranking_metric == 'minimum_cardinality':
+                score = minimum_cardinality_similarity(ranking_gt=a.similar_artists, my_ranking=a.my_similar_artists)
+
             names = [artists[id_].name for id_ in a.my_similar_artists]
         except:
-            rbo_score = 0
+            score = 0
             names = []
-        f.write('%s. RBO: %.2f ' % ('minkowsky', rbo_score))
+        f.write('%s. %s: %.2f ' % (heatmap_metric, ranking_metric, score))
         f.write(str(names))
         f.write('\n')
         f.write('\n')
@@ -86,11 +117,17 @@ def print_rankings_verbose(artists, filename, output_path):
         n_out = 0
         for i, sim_a in enumerate(a.similar_artists):
             try:
-                dist = compute_heatmap_distance(h1=a.tsne_heatmap, h2=artists[a.similar_artists[i]].tsne_heatmap)
+                if heatmap_metric == 'minkowski':
+                    dist = compute_heatmap_distance(h1=a.tsne_heatmap, h2=artists[a.similar_artists[i]].tsne_heatmap)
+                elif heatmap_metric == 'cc_peak':
+                    dist = compute_cross_correlation_distance(h1=a.tsne_heatmap, h2=artists[a.similar_artists[i]].tsne_heatmap, peak_thresh=peak_thresh)
+
                 row = [artists[a.similar_artists[i]].id, artists[a.similar_artists[i]].name, dist, artists[a.my_similar_artists[i]].id, artists[a.my_similar_artists[i]].name, a.my_similar_artists_distances[i]]
                 data.append(row)
-            except:
+            except Exception as e:
+                #print(a.tsne_heatmap, artists[a.similar_artists[i]].tsne_heatmap)
                 n_out += 1
+
 
         out_pathname = output_path + a.id + '.xlsx'
         df = pd.DataFrame(data=data, columns=header)
@@ -114,6 +151,13 @@ def main(args):
     if output_path[-1] != '/':
         output_path += '/'
 
+    global heatmap_metric
+    global ranking_metric
+    global peak_thresh
+    heatmap_metric = args.heatmap_metric
+    ranking_metric = args.ranking_metric
+    peak_thresh=args.peak_thresh
+
     print('LOADING PKL ARTISTS...', end='')
     artists = load_data(filename=input_pkl)
     print('DONE')
@@ -130,8 +174,9 @@ def main(args):
             artists[k].my_similar_artists_distances = arr[:, 1]
 
     ranking_pathname = output_path + 'ranking.txt'
-    print_rankings_verbose(artists=artists, filename=ranking_pathname,output_path=output_path)
-    compute_ranking_score(artists=artists)
+    print_rankings_verbose(artists=artists, filename=ranking_pathname,output_path=output_path,heatmap_metric=heatmap_metric,
+                           ranking_metric=ranking_metric, peak_thresh=peak_thresh)
+    compute_ranking_score(artists=artists, ranking_metric=ranking_metric)
 
 if __name__ == '__main__':
 
@@ -142,5 +187,10 @@ if __name__ == '__main__':
                         help='path to pkl merged ranking')
     parser.add_argument('--output_path', '-o', required=True, type=str, default='',
                         help='path where output data will be saved')
+    parser.add_argument('--heatmap_metric', '-hm', required=False, type=str, default='minkowski',
+                        choices=['minkowski', 'cc_peak',], help='similarity metric when comparing heatmaps')
+    parser.add_argument('--ranking_metric', '-rm', required=False, type=str, default='rbo',
+                        choices=['rbo','intersection', 'minimum_cardinality', ], help='similarity metric when comparing ranking')
+    parser.add_argument('--peak_thresh', '-t', required=False, type=float, default=1.1, help='peak threshold')
     args = parser.parse_args()
     main(args)
