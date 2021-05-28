@@ -12,7 +12,7 @@ heatmap_metric = None
 ranking_metric = None
 peak_thresh = None
 
-def compute_ranking_score(artists,ranking_metric):
+def compute_ranking_score(artists,ranking_metric, heatmap_metric):
     """
         Give a score to a ranking algorithm
                     Parameters
@@ -28,11 +28,19 @@ def compute_ranking_score(artists,ranking_metric):
     print('Computing ranking score my rank and ground truth...')
     for a in artists.values():
         if len(a.similar_artists) > 0 and a.my_similar_artists is not None:
-            scores.append(rbo.RankingSimilarity(a.similar_artists, a.my_similar_artists).rbo())
+            if ranking_metric=='rbo':
+                score = rbo.RankingSimilarity(a.similar_artists, a.my_similar_artists).rbo()
+            elif ranking_metric =='intersection':
+                score = ranking_intersection_similarity(ranking_gt=a.similar_artists, my_ranking = a.my_similar_artists)
+            elif ranking_metric =='minimum_cardinality':
+                score = minimum_cardinality_similarity(ranking_gt=a.similar_artists, my_ranking = a.my_similar_artists)
+
+            scores.append(score)
+
             tmp.append([a.id,rbo.RankingSimilarity(a.similar_artists, a.my_similar_artists).rbo()])
     scores = np.array(scores)
 
-    print('The Average score (RBO) for the metric minkowsy is ', np.mean(scores))
+    print('The Average score (', ranking_metric,') for the metric ',heatmap_metric,' is ', np.mean(scores))
 
 def print_rankings(artists, filename,ranking_metric):
 
@@ -67,7 +75,7 @@ def ranking_intersection_similarity(ranking_gt, my_ranking):
     # prendere in considerazione come metrica (alternativamente ad rbo) il
     # rapporto tra la semplice intersezione e la cardinalità del ranking di gt
 
-    intersection = [value for value in ranking_gt if value in ranking_metric]
+    intersection = [value for value in ranking_gt if value in my_ranking]
     sim = len(intersection)/len(ranking_gt)
     return sim
 
@@ -78,8 +86,6 @@ def minimum_cardinality_similarity(ranking_gt, my_ranking):
     return 0
 
 def print_rankings_verbose(artists, filename, output_path, heatmap_metric, ranking_metric, peak_thresh):
-
-
 
     f = open(filename, "w+")
 
@@ -176,7 +182,7 @@ def main(args):
     ranking_pathname = output_path + 'ranking.txt'
     print_rankings_verbose(artists=artists, filename=ranking_pathname,output_path=output_path,heatmap_metric=heatmap_metric,
                            ranking_metric=ranking_metric, peak_thresh=peak_thresh)
-    compute_ranking_score(artists=artists, ranking_metric=ranking_metric)
+    compute_ranking_score(artists=artists, ranking_metric=ranking_metric, heatmap_metric=heatmap_metric)
 
 if __name__ == '__main__':
 

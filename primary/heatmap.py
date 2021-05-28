@@ -166,7 +166,7 @@ def compute_heatmap_distance(h1,h2,dimension=20,metric='minkowski_2'):
         total_d = 1 - total_d
     return total_d
 
-def compute_cross_correlation_distance(h1, h2, peak_thresh, dimension=20, max_peaks=1):
+def compute_cross_correlation_distance(h1, h2, peak_thresh=1, dimension=20, max_peaks=1):
     shft_0 = np.array([19, 19])
 
     # compute cross correlation matrix
@@ -202,3 +202,40 @@ def compute_cross_correlation_distance(h1, h2, peak_thresh, dimension=20, max_pe
         dist = np.sqrt((19 ^ 2) + (19 ^ 2))
 
     return dist
+
+def compute_cross_correlation_distance_normalized(h1, h2, peak_thresh=1, dimension=20, max_peaks=1):
+    shft_0 = np.array([19, 19])
+
+    # compute cross correlation matrix
+    X = signal.correlate2d(h1, h2)
+
+    #find peaks in matrix
+    peak = find_peaks(data=X, threshold=0, box_size=1, npeaks=max_peaks)
+    try:
+        for p in peak:
+
+
+            peak_value = p['peak_value']
+            '''
+            mean = 0
+            for i,row in enumerate(X):
+                for j, elem in enumerate(row):
+                    if i != p['x_peak'] or j != p['y_peak']:
+                        mean += elem
+            mean /= (39*39) - 1
+            '''
+            X[p['x_peak'], p['y_peak']] = 0
+            mean = np.sum(X)/(39*39-1)
+
+
+            if peak_value > (peak_thresh*mean):
+                #se il picco > [1.1*media,...,1.5*media] => calcolare distanza sulla base dello shift
+                dist = np.linalg.norm(np.array([p['x_peak'], p['y_peak']]) - shft_0)
+            else:
+                #altrimenti (se picco < di [1.1*media,...,1.5*media]) => impostare dist ad un valore massimo > di sqrt(19^2+19^2)
+                dist = np.sqrt((19 ^ 2) + (19 ^ 2))
+    except:
+        print("NO PEAKS FOUND")
+        dist = np.sqrt((19 ^ 2) + (19 ^ 2))
+
+    return dist/peak_value

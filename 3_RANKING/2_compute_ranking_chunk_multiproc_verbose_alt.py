@@ -131,7 +131,7 @@ def main(args):
 
     print('COMPUTE RANKING of selection ', chunk_filename)
     chunk_level_ranking = compute_ranking_master()
-    output_filename= os.path.basename(chunk_filename)
+    output_filename = os.path.basename(chunk_filename)
     output_filename += '_OUT.pkl'
     output_path += output_filename
 
@@ -152,4 +152,14 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     main(args)
+
+#TODO
+# estrarre dal datasaet completo dizionario artisti con heatmap associate e ranking_gt, scrivere codice per aprire/salare su file
+# metrica 1 cc_peak con peak_thresh=1
+# metrica 2 calcolare la distanza da shift_0 e normalizzare (dividere) la distanza per il peak['value']
+# produrre ranking di lunghezza massima per ogni artista e salvarlo
+# estrarre dati delle distanze dei ranking della ground truth
+# 100 istogrammi (uno per ogni posizione) del valore della metrica
+# 3 istogrammi (media, minimo, massimo) del valore della metrica
+# per il futuro: prendere in considerazione tutti i picchi della matrice di CC
 
