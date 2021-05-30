@@ -124,7 +124,7 @@ def main(args):
     print('DONE')
 
     global chunk
-    print('LOADING CHUNK...')
+    print('LOADING CHUNKS...')
     chunk = load_data(filename=chunk_filename)
     print('DONE')
 

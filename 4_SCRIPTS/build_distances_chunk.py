@@ -4,7 +4,7 @@ import sys
 # insert at 1, 0 is the script path (or '' in REPL)
 import time
 from functools import partial
-from tqdm import tqdm
+
 
 sys.path.insert(1, '/home/crottondi/PIRISI_TESI/TESI_BIS/')
 import numpy as np
@@ -12,9 +12,6 @@ import argparse
 from primary.data_io import save_data, load_data
 from primary.heatmap import compute_heatmap_distance, compute_cross_correlation_distance, \
     compute_cross_correlation_distance_normalized
-from operator import itemgetter
-import os
-import pandas as pd
 
 
 artists = None
@@ -47,14 +44,15 @@ def merge_dictionaries(result):
             final_dict[id_] = d
     return final_dict
 
-def build_matrix_master():
+def build_matrix_master(chunk):
     global artists
     global metric
     start = time.time()
     func = partial(build_matrix_slave, metric)
 
     nproc = multiprocessing.cpu_count()
-    artists_ids = list(artists.keys())
+
+    artists_ids = list(chunk)
 
     split = np.array_split(artists_ids, nproc)
 
@@ -75,18 +73,22 @@ def main(args):
     global artists
     artists = load_data(input_path)
 
-    d = build_matrix_master()
 
-    # save
-    #df = pd.DataFrame(data=d)
-    #df.to_excel(output_path)
+    chunk_filename = args.input_chunk
+    print('LOADING CHUNKS...')
+    chunk = load_data(filename=chunk_filename)
+    print('DONE')
 
+    d = build_matrix_master(chunk=chunk)
 
     save_data(filename=output_path, dict=d)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+
+    parser.add_argument('--input_chunk', '-ic', required=True, type=str,
+                        help='path to pkl chunk of artists')
 
     parser.add_argument('--input_pkl', '-i', required=True, type=str,
                         help='path to pkl artists dictionary it has to include heatmaps attached')
