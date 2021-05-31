@@ -5,6 +5,7 @@ sys.path.insert(1, '/home/crottondi/PIRISI_TESI/TESI_BIS/')
 import argparse
 from primary.data_io import save_data, load_data
 import gc
+import pandas as pd
 def getCurrentMemoryUsage():
     ''' Memory usage in kB '''
 
@@ -36,7 +37,8 @@ def main(args):
     print('before gc Memory (GB) : ', getCurrentMemoryUsage() / (2 ** 20))
     gc.collect()
     print('after gc Memory (GB) : ', getCurrentMemoryUsage() / (2 ** 20))
-    save_data(dict=dictionary, filename=final_pathname)
+    df = pd.DataFrame.from_dict(dictionary)
+    save_data(dict=df, filename=final_pathname)
     print('chunk ', str(i), 'Memory (GB) : ', getCurrentMemoryUsage() / (2 ** 20))
 
 if __name__ == '__main__':

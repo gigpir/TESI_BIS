@@ -1,7 +1,15 @@
-## **Lista dei file:**
 
-##### tutti i file .pkl contengono dei dizionari la cui chiave è sempre l'id dell'artista
 
+# **Lista dei file:**
+
+###### Tutti i file _.pkl_ contengono un dizionario la cui chiave è l'id dell'artista
+
+### Dataset t-SNE:
+- #### artist_m{i}_hm.pkl
+  - contiene un dizionario di oggetti `Artist` (fare riferimento alla classe descritta nel file `primary/data_io.py`).
+  - Ad ogni oggetto della classe `Artist` è _opzionalmente_ associata una heatmap 20x20 accessibile tramite la proprietà `.tsne_heatmap`.
+  - Ad ogni oggetto della classe `Artist` è associato un dizionario di oggetti `Song` la cui chiave è l'id del brano.
+  - Ad ogni oggetto della classe `Song` è _opzionalmente_ associata una tupla contenente le coordinate tsne accesssibile tramite la proprietà `.tsne[0]` o `.tsne[1]`  
 - #### distances_cc_peak_1.pkl 
     dizionario di dizionari (nested) che contiene le distanze calcolate con il criterio
     che fa uso della cross correlazione considerando un picco
