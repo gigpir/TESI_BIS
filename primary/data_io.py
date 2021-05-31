@@ -66,7 +66,7 @@ def file_to_obj(h5, reduced=True):
 
 def save_data(dict, filename="data_subset.pkl"):
     with open(filename, "wb") as a_file:
-        pickle.dump(dict, a_file)
+        pickle.dump(dict, a_file, pickle.HIGHEST_PROTOCOL)
     return True
 
 
