@@ -24,7 +24,7 @@ def distance_vs_gt_position(ground_truth, distances):
     for i, (id_outer, l) in enumerate(ground_truth.items()):
         for j, id_inner in enumerate(l):
             try:
-                gt_distances[i, j] = cc_peak_1_dist[id_outer][id_inner]
+                gt_distances[i, j] = distances[id_outer][id_inner]
             except:
                 n += 1
 
@@ -65,16 +65,17 @@ if __name__ == '__main__':
     parser.add_argument('--heatmaps', '-hm', required=False, type=str, default='./heatmaps.pkl',
                         help='path to pkl heatmap file')
     parser.add_argument('--names', '-n', required=False, type=str, default='./names.pkl',
-                        help='path to pkl heatmap file')
+                        help='path to pkl name file')
     parser.add_argument('--ranking', '-r', required=False, type=str, default='./.pkl',
-                        help='path to pkl heatmap file')
+                        help='path to ranking file')
+    parser.add_argument('--output_folder', '-o', required=False, type=str, default='./',
+                        help='output folder')
     args = parser.parse_args()
 
-    #names = load_data(filename='/home/gigi/PycharmProjects/TESI_BIS/OUTPUT/names.pkl')
-    #heatmaps = load_data(filename='/home/gigi/PycharmProjects/TESI_BIS/OUTPUT/heatmaps.pkl')
-    ground_truth = load_data(filename='/home/gigi/PycharmProjects/TESI_BIS/OUTPUT/ground_truth.pkl')
-    cc_peak_1_dist = load_data(filename='/home/gigi/PycharmProjects/TESI_BIS/OUTPUT/distances_cc_peak_1.pkl')
-    #cc_peak_2_dist = load_data(filename='/home/gigi/PycharmProjects/TESI_BIS/OUTPUT/distances_cc_peak_2.pkl')
-    #ranking = load_data(filename='/home/gigi/PycharmProjects/TESI_BIS/OUTPUT/max_length_ranking_cc_peak_1.pkl')
+    names = load_data(filename=args.names)
+    heatmaps = load_data(filename=args.heatmaps)
+    ground_truth = load_data(filename=args.ground_truth)
+    distances = load_data(filename=args.distances)
+    ranking = load_data(filename=args.ranking)
 
-    print_histograms(gt_distances=distance_vs_gt_position(ground_truth=ground_truth,distances=cc_peak_1_dist), folder='/home/gigi/PycharmProjects/TESI_BIS/OUTPUT/')
+    print_histograms(gt_distances=distance_vs_gt_position(ground_truth=ground_truth, distances=distances), folder='/home/gigi/PycharmProjects/TESI_BIS/OUTPUT/')
