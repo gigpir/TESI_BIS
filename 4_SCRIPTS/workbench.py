@@ -33,8 +33,7 @@ def distance_vs_gt_position(ground_truth, distances):
 
 
 def print_histograms(gt_distances, folder):
-    os.path.dirname(folder)
-    path = os.path.join(folder,'HISTOGRAMS')
+    path = folder
     if not os.path.exists(path):
         os.makedirs(path)
 
@@ -68,7 +67,7 @@ if __name__ == '__main__':
                         help='path to pkl name file')
     parser.add_argument('--ranking', '-r', required=False, type=str, default='./.pkl',
                         help='path to ranking file')
-    parser.add_argument('--output_folder', '-o', required=False, type=str, default='./',
+    parser.add_argument('--output_folder', '-o', required=False, type=str, default='./OUTPUT',
                         help='output folder')
     args = parser.parse_args()
 
@@ -77,5 +76,12 @@ if __name__ == '__main__':
     ground_truth = load_data(filename=args.ground_truth)
     distances = load_data(filename=args.distances)
     ranking = load_data(filename=args.ranking)
+    output_folder = args.output_folder
+    print_histograms(gt_distances=distance_vs_gt_position(ground_truth=ground_truth, distances=distances), folder=output_folder)
 
-    print_histograms(gt_distances=distance_vs_gt_position(ground_truth=ground_truth, distances=distances), folder='/home/gigi/PycharmProjects/TESI_BIS/OUTPUT/')
+'''
+    names = load_data(filename='/home/gigi/PycharmProjects/TESI_BIS/OUTPUT/names.pkl')
+    heatmaps = load_data(filename='/home/gigi/PycharmProjects/TESI_BIS/OUTPUT/heatmaps.pkl')
+    ground_truth = load_data(filename='/home/gigi/PycharmProjects/TESI_BIS/OUTPUT/ground_truth.pkl')
+    distances = load_data(filename='/home/gigi/PycharmProjects/TESI_BIS/OUTPUT/distances_cc_peak_2.pkl')
+    ranking = load_data(filename=)'''
